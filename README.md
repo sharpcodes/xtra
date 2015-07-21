@@ -1,2 +1,2 @@
 # xtra
-Xml based testing framework for restful API catalogue
+Xml based testing framework for restful APIs
