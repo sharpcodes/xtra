@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout>
+            <Pattern>%d{HH:mm:ss.SSS} [%t] %logger{36} - %msg%n</Pattern>
+            </PatternLayout>
+        </Console>
+        <File name="MyFile" fileName="logs/application.log">
+            <PatternLayout>
+                <Pattern>%d{HH:mm:ss.SSS} [%t] %logger{36} - %msg%n</Pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="MyFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

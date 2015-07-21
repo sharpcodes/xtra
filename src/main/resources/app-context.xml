@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="httpClient" class="org.rest.automation.httpclient.ApacheHttpClient" init-method="initialize"/>
+    <bean id="jsonParser" class="org.rest.automation.jsonparser.SimpleJsonParser"/>
+    <bean id="restfulHttpAdapter" class="org.rest.automation.httpAdapter.RestfulHttpAdapter">
+        <property name="apacheHttpClient" ref="httpClient"/>
+    </bean>
+    <bean id="testTaskExecutor" class="org.rest.automation.executors.TestTaskExecutor">
+        <property name="resultDecorator" ref="testResultDecorator"/>
+        <property name="assertionExecutor" ref="assertionExecutor"/>
+        <property name="resourceInvocationHandler" ref="resourceInvocationHandler"/>
+    </bean>
+    <bean id="testSuiteExecutor" class="org.rest.automation.executors.TestSuiteExecutorImpl">
+        <property name="testTaskExecutor" ref="testTaskExecutor"/>
+    </bean>
+    <bean id="testResultDecorator" class="org.rest.automation.decorators.TestResultDecorator">
+        <property name="decorators">
+            <list>
+                <ref bean="junitResultDecorator"/>
+                <ref bean="xmlResultDecorator"/>
+            </list>
+
+        </property>
+    </bean>
+    <bean id="assertionExecutor" class="org.rest.automation.executors.AssertionExecutor">
+        <property name="expressionResolver" ref="expressionResolver"/>
+    </bean>
+    <bean id="propertiesManager" class="org.rest.automation.properties.manager.PropertiesManagerImpl">
+        <property name="expressionResolver" ref="expressionResolver"/>
+            </bean>
+    <bean id="expressionResolver" class="org.rest.automation.jsonparser.ExpressionResolver">
+        <property name="simpleJsonParser" ref="jsonParser"/>
+        <property name="propertiesManager" ref="propertiesManager"/>
+    </bean>
+    <bean id="xmlResultDecorator" class="org.rest.automation.decorators.XMLTestDecorator"/>
+
+    <bean id="junitResultDecorator" class="org.rest.automation.decorators.JUnitResultDecorator">
+        <property name="jUnitModelMapper" ref="junitModelMapper"/>
+    </bean>
+    <bean id="junitModelMapper" class="org.rest.automation.model.junit.JUnitModelMapper"/>
+    <bean id="resourceInvocationHandler" class="org.rest.automation.httpAdapter.ResourceInvocationHandler">
+        <property name="expressionResolver" ref="expressionResolver"/>
+        <property name="httpAdapter" ref="restfulHttpAdapter"/>
+    </bean>
+    <bean id="filePipeline" class="java.util.concurrent.ArrayBlockingQueue">
+        <constructor-arg type="int" value="10"/>
+    </bean>
+    <bean id="testSuitePipeline" class="java.util.concurrent.ArrayBlockingQueue">
+        <constructor-arg type="int" value="10"/>
+    </bean>
+    <bean id="completedTestSuitePipeline" class="java.util.concurrent.ArrayBlockingQueue">
+        <constructor-arg type="int" value="10"/>
+    </bean>
+   <bean id="specLoader" class="org.rest.automation.concurrency.SpecLoader"/>
+
+
+   <bean id="fileConsumerTestSuiteProducer" class="org.rest.automation.concurrency.FileConsumerTestSuiteProducer">
+       <property name="filePileline" ref="filePipeline"/>
+       <property name="testSuitePipeline" ref="testSuitePipeline"/>
+    </bean>
+    <bean id="testSuiteConsumerRunner" class="org.rest.automation.concurrency.TestSuiteConsumerRunner">
+        <property name="testSuitePipeline" ref="testSuitePipeline"/>
+        <property name="completedTestPipeline" ref="completedTestSuitePipeline"/>
+        <property name="testSuiteExecutor" ref="testSuiteExecutor"/>
+    </bean>
+    <bean id="completedTestSuiteRunner" class="org.rest.automation.concurrency.CompletedTestSuiteConsumer">
+        <property name="completedTestPipeline" ref="completedTestSuitePipeline"/>
+        <property name="resultDecorator" ref="testResultDecorator"/>
+    </bean>
+    <bean id="specProducer" class="org.rest.automation.concurrency.SpecFileProducer">
+        <property name="filePileline" ref="filePipeline"/>
+            </bean>
+    <bean id="flowManager" class="org.rest.automation.concurrency.FlowManager">
+        <property name="jobRunners">
+            <list>
+                <ref bean="specProducer"/>
+                <ref bean="fileConsumerTestSuiteProducer"/>
+                <ref bean="testSuiteConsumerRunner"/>
+                <ref bean="completedTestSuiteRunner"/>
+            </list>
+        </property>
+        <property name="specLoader" ref="specLoader"/>
+    </bean>
+</beans>
