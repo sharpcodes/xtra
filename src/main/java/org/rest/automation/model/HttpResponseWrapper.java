@@ -1,13 +1,21 @@
 package org.rest.automation.model;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Created by sharpcodes on 4/7/15.
  */
+
+@XmlAccessorType(XmlAccessType.FIELD)
 public class HttpResponseWrapper {
 
+
+    @XmlElement(name="httpStatus")
     private int status;
+    @XmlElement(name="httpResponse")
     private String body;
     private String error;
+    @XmlTransient
     private boolean failed;
 
     public String getError() {

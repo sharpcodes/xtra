@@ -30,7 +30,7 @@ public class TestSuite {
     private int failureCount;
 
 
-    @XmlElement(name="results")
+    @XmlElementWrapper(name="results")
     private Map<String, HttpResponseWrapper> testContext = new HashMap<String, HttpResponseWrapper>();
 
     public Map<String, HttpResponseWrapper> getTestContext() {
